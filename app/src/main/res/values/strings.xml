@@ -1,10 +1,8 @@
 <resources>
-
-    <string name="app_name">Picker</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="app_name">TimePicker</string>
     <string name="action_settings">Settings</string>
-    <string name="appTitle">Dial Time Picker</string>
-    <string name="showTime">Show time</string>
+    <string name="appTitle">Time picker</string>
     <string name="pickerEnable">Picker enabled</string>
-
+    <string name="time24Time">24-hour time</string>
+    <string name="time12Time">12-hour time</string>
 </resources>
