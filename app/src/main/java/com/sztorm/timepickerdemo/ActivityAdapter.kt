@@ -1,20 +1,14 @@
 package com.sztorm.timepickerdemo
 
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentStatePagerAdapter
-import com.sztorm.timepickerdemo.timepickerdemo.R
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
 
-class ActivityAdapter(fm: FragmentManager) :
-    FragmentStatePagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+class ActivityAdapter(fragmentActivity: FragmentActivity, private val layoutIDs: IntArray)
+    : FragmentStateAdapter(fragmentActivity) {
 
-    var layoutIDs = intArrayOf(R.layout.normal_picker, R.layout.ampm_picker)
+    override fun createFragment(position: Int): Fragment
+        = MainFragment.newInstance(layoutIDs[position])
 
-    override fun getItem(position: Int): Fragment {
-        return MainFragment.newInstance(layoutIDs[position])
-    }
-
-    override fun getCount(): Int {
-        return layoutIDs.size
-    }
+    override fun getItemCount(): Int = layoutIDs.size
 }

@@ -3,7 +3,7 @@ package com.sztorm.timepickerdemo
 import android.os.Bundle
 import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
-import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import com.sztorm.timepickerdemo.timepickerdemo.R
 
 class Main : AppCompatActivity() {
@@ -13,8 +13,11 @@ class Main : AppCompatActivity() {
 
         title = resources.getString(R.string.appTitle)
 
-        val viewPager: ViewPager = findViewById(R.id.viewPager)
-        viewPager.adapter = ActivityAdapter(supportFragmentManager)
+        val viewPager: ViewPager2 = findViewById(R.id.viewPager)
+        val layoutIDs = intArrayOf(R.layout.normal_picker, R.layout.ampm_picker)
+
+        viewPager.adapter = ActivityAdapter(this, layoutIDs)
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

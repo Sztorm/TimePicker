@@ -9,14 +9,14 @@ internal class TimeTextCache {
     var minute: Int
         get() = (buffer[3] - '0') * 10 + (buffer[4] - '0')
         set(value) {
-            buffer[3] = ((value / 10) + '0'.toInt()).toChar()
-            buffer[4] = ((value % 10) + '0'.toInt()).toChar()
+            buffer[3] = ((value / 10) + '0'.code).toChar()
+            buffer[4] = ((value % 10) + '0'.code).toChar()
         }
     var hour: Int
         get() = (buffer[0] - '0') * 10 + (buffer[1] - '0')
         set(value) {
-            buffer[0] = ((value / 10) + '0'.toInt()).toChar()
-            buffer[1] = ((value % 10) + '0'.toInt()).toChar()
+            buffer[0] = ((value / 10) + '0'.code).toChar()
+            buffer[1] = ((value % 10) + '0'.code).toChar()
         }
 
     init {

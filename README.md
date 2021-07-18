@@ -1,7 +1,7 @@
 # TimePicker
 A customizable time picker component for Android. This is a fork of [ugurtekbas's dialTimePicker](https://github.com/ugurtekbas/dialTimePicker).
 
-Minimum API level: **21 (Android 5.0)**
+Minimum API level: **16 (Jelly Bean 4.1.x)**
 
 <img src="assets/timepicker-pic-02.png" alt="timepicker picture 2" width=450 height=925>
 <img src="assets/timepicker-pic-01.png" alt="timepicker picture 1" width=450 height=925>
@@ -23,7 +23,7 @@ repositories {
 Add it to your app build.gradle
 ```groovy
 dependencies {
-    compile 'com.github.Sztorm:TimePicker:1.0.0'
+    implementation 'com.github.Sztorm:TimePicker:1.0.1'
 }
 ```
 
@@ -113,8 +113,7 @@ val pickedHourFormatted: Int = picker.hourFormatted
 // Returns current picked minute
 val pickedMinute: Int = picker.minute
 
-// Returns current picked time. Useful for just using the time without keeping the picker
-// reference.
+// Returns current picked time. Useful for using the time without keeping the picker reference.
 val pickedTime: PickedTime = picker.time
 
 // Values related to 12-hour formatted time

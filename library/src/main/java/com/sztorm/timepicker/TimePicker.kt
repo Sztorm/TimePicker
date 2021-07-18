@@ -10,7 +10,6 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.text.format.DateFormat
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import java.util.*
@@ -44,8 +43,8 @@ class TimePicker : View {
 
         private fun Int.toTwoDigitString(): String {
             val result = CharArray(2)
-            result[0] = ((this / 10) + '0'.toInt()).toChar()
-            result[1] = ((this % 10) + '0'.toInt()).toChar()
+            result[0] = ((this / 10) + '0'.code).toChar()
+            result[1] = ((this % 10) + '0'.code).toChar()
 
             return String(result)
         }
@@ -97,7 +96,7 @@ class TimePicker : View {
     private var isMoving = false
     private var timeTextCache = TimeTextCache()
     private var amPmTextCache = AmPmTextCache()
-    private var mIs24Hour: Boolean = DateFormat.is24HourFormat(getContext())
+    private var mIs24Hour: Boolean = DateFormat.is24HourFormat(context)
     private val degreesFromClockStart: Double
         get() = (Math.toDegrees(angleRadians) + DEGREE_FOR_FULL_ANGLE + DEGREE_FOR_CLOCK_START) %
             DEGREE_FOR_FULL_ANGLE
@@ -245,14 +244,11 @@ class TimePicker : View {
 
         try {
             mTextColor = typedArray.getColor(R.styleable.TimePicker_textColor, mTextColor)
-            Log.i("TimePicker", "pointer color before" + mPointerColor.toString())
             mPointerColor = typedArray.getColor(R.styleable.TimePicker_pointerColor, mPointerColor)
-            Log.i("TimePicker", "pointer color after" + mPointerColor.toString())
             mClockColor = typedArray.getColor(R.styleable.TimePicker_clockColor, mClockColor)
             mCanvasColor = typedArray.getColor(R.styleable.TimePicker_canvasColor, mCanvasColor)
             mTrackSize = typedArray.getDimension(R.styleable.TimePicker_trackSize, mTrackSize)
             mPointerRadius = typedArray.getDimension(R.styleable.TimePicker_pointerRadius, mPointerRadius)
-            Log.i("TimePicker", mTrackSize.toString())
             mIs24Hour = typedArray.getBoolean(R.styleable.TimePicker_is24Hour, mIs24Hour)
             isTrackTouchable = typedArray.getBoolean(R.styleable.TimePicker_isTrackTouchable, isTrackTouchable)
             invalidate()
@@ -335,7 +331,6 @@ class TimePicker : View {
 
     private fun drawPointer(canvas: Canvas) {
         paint.style = Paint.Style.FILL
-        Log.i("TimePicker", "pointer color on draw" + mPointerColor.toString())
         paint.color = mPointerColor
         paint.alpha = paintAlpha
 

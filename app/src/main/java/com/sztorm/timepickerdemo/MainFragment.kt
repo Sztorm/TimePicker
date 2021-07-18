@@ -33,8 +33,8 @@ class MainFragment : Fragment() {
     }
 
     private var layoutID = 0
-    lateinit var time24ValueText: TextView
-    lateinit var time12ValueText: TextView
+    private lateinit var time24ValueText: TextView
+    private lateinit var time12ValueText: TextView
 
     override fun onSaveInstanceState(bundle: Bundle) {
         super.onSaveInstanceState(bundle)
