@@ -1,6 +1,5 @@
 package com.sztorm.timepickerdemo
 
-import android.annotation.SuppressLint
 import android.content.res.Resources
 import android.graphics.Color
 import android.os.Bundle
@@ -14,8 +13,6 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.sztorm.timepicker.PickedTime
 import com.sztorm.timepicker.TimePicker
-import com.sztorm.timepicker.TimePicker.Companion.toStringHourFormat
-import com.sztorm.timepicker.TimePicker.Companion.toStringMinuteFormat
 import com.sztorm.timepicker.TimeChangedListener
 import com.sztorm.timepickerdemo.timepickerdemo.R
 
@@ -50,13 +47,9 @@ class MainFragment : Fragment() {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     private fun setTimeValueTexts(time: PickedTime) {
-        val hourText: String = time.hour.toStringHourFormat()
-        val minuteText: String = time.minute.toStringMinuteFormat()
-
-        time24ValueText.text = "${hourText}:${minuteText}"
-        time12ValueText.text = time.toString()
+        time24ValueText.text = time.toString24HourFormat()
+        time12ValueText.text = time.toString12HourFormat()
     }
 
     private fun set12HPickerLayout(view: View) {

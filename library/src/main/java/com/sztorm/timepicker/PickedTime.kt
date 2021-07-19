@@ -14,13 +14,13 @@ data class PickedTime(val hour: Int, val minute: Int, val is24Hour: Boolean) {
     val isPm
         get() = hour >= 12
 
-    private fun to24HString(): String = StringBuilder(5)
+    fun toString24HourFormat(): String = StringBuilder(5)
         .appendTwoDigitInt(hour)
         .append(':')
         .appendTwoDigitInt(minute)
         .toString()
 
-    private fun to12HString(): String {
+    fun toString12HourFormat(): String {
         val hour = this.hour % 12
         val resultBuilder = StringBuilder(8)
             .appendTwoDigitInt(if (hour == 0) 12 else hour)
@@ -32,7 +32,7 @@ data class PickedTime(val hour: Int, val minute: Int, val is24Hour: Boolean) {
         return resultBuilder.toString()
     }
 
-    override fun toString(): String = if(is24Hour) to24HString() else to12HString()
+    override fun toString(): String = if(is24Hour) toString24HourFormat() else toString12HourFormat()
 
     companion object {
         private fun StringBuilder.appendTwoDigitInt(i: Int): StringBuilder {
