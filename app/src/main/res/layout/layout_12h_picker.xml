@@ -8,7 +8,7 @@
     android:orientation="vertical">
 
     <com.sztorm.timepicker.TimePicker
-        android:id="@+id/amPmPicker"
+        android:id="@+id/picker"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"

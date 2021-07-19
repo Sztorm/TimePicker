@@ -2,12 +2,18 @@
 <resources>
     <declare-styleable name="TimePicker">
         <attr name="canvasColor" format="color" />
-        <attr name="clockColor" format="color" />
-        <attr name="textColor" format="color" />
+        <attr name="clockFaceColor" format="color" />
         <attr name="pointerColor" format="color" />
-        <attr name="is24Hour" format="boolean" />
-        <attr name="isTrackTouchable" format="boolean" />
+        <attr name="trackColor" format="color" />
+        <attr name="textColor" format="color" />
+        <attr name="disabledCanvasColor" format="color" />
+        <attr name="disabledClockFaceColor" format="color" />
+        <attr name="disabledPointerColor" format="color" />
+        <attr name="disabledTrackColor" format="color" />
+        <attr name="disabledTextColor" format="color" />
         <attr name="trackSize" format="dimension" />
         <attr name="pointerRadius" format="dimension" />
+        <attr name="is24Hour" format="boolean" />
+        <attr name="isTrackTouchable" format="boolean" />
     </declare-styleable>
 </resources>

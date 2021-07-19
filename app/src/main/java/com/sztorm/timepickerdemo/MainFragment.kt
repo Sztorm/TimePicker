@@ -2,6 +2,7 @@ package com.sztorm.timepickerdemo
 
 import android.annotation.SuppressLint
 import android.content.res.Resources
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -58,24 +59,26 @@ class MainFragment : Fragment() {
         time12ValueText.text = time.toString()
     }
 
-    private fun createAmPmPickerLayout(view: View) {
-        val amPmPicker: TimePicker = view.findViewById(R.id.amPmPicker)
+    private fun set12HPickerLayout(view: View) {
+        val picker: TimePicker = view.findViewById(R.id.picker)
         time24ValueText = view.findViewById(R.id.time24ValueText)
         time12ValueText = view.findViewById(R.id.time12ValueText)
 
-        amPmPicker.clockColor = resources.getColorCompat(R.color.clockColor, theme = null)
-        amPmPicker.pointerColor = resources.getColorCompat(R.color.pointerColor, theme = null)
-        amPmPicker.trackSize = 20F
-        amPmPicker.pointerRadius = 60F
-        amPmPicker.isTrackTouchable = true
-        amPmPicker.setTime(12, 45, TimePicker.AM)
-        amPmPicker.timeChangedListener = TimeChangedListener {
+        picker.trackColor = resources.getColorCompat(R.color.clockColor, theme = null)
+        picker.clockFaceColor = Color.WHITE
+        picker.pointerColor = resources.getColorCompat(R.color.pointerColor, theme = null)
+        picker.trackSize = 20F
+        picker.pointerRadius = 60F
+        picker.isTrackTouchable = true
+        picker.setTime(12, 45, TimePicker.AM)
+
+        picker.timeChangedListener = TimeChangedListener {
             setTimeValueTexts(it)
         }
-        setTimeValueTexts(amPmPicker.time)
+        setTimeValueTexts(picker.time)
     }
 
-    private fun createNormalPickerLayout(view: View) {
+    private fun set24HPickerLayout(view: View) {
         val picker: TimePicker = view.findViewById(R.id.picker)
         val checkBox: CheckBox = view.findViewById(R.id.checkbox)
 
@@ -87,11 +90,9 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(layoutID, container, false)
 
-        if (layoutID == R.layout.ampm_picker) {
-            createAmPmPickerLayout(view)
-        }
-        else {
-            createNormalPickerLayout(view)
+        when (layoutID) {
+            R.layout.layout_12h_picker -> set12HPickerLayout(view)
+            R.layout.layout_24h_picker -> set24HPickerLayout(view)
         }
         return view
     }

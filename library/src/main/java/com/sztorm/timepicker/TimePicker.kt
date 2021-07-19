@@ -7,18 +7,18 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.RectF
 import android.text.format.DateFormat
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import com.sztorm.timepicker.IntColorExtensions.Companion.alpha
+import com.sztorm.timepicker.IntColorExtensions.Companion.withAlpha
 import java.util.*
 import kotlin.math.*
 
 class TimePicker : View {
     companion object {
-        private const val PICKER_DISABLED_ALPHA = 77
-        private const val PICKER_ENABLED_ALPHA = 255
+        private const val PICKER_DEFAULT_DISABLED_ALPHA = 77
         private const val DEGREE_FOR_FULL_ANGLE = 360.0
         private const val DEGREE_FOR_CLOCK_START = 90.0
         private const val DEGREE_STEP_FOR_1HOUR_IN_24H_CLOCK: Double = 360.0 / 24.0
@@ -65,22 +65,29 @@ class TimePicker : View {
     }
 
     private val paint = Paint()
-    private var paintAlpha = PICKER_ENABLED_ALPHA
-    private val rectF = RectF()
     private var minOfWidthAndHeight = 0f
     private var radius = 0f
     private var offset = 0f
-    private var slopX = 0f
-    private var slopY = 0f
     private var pointerX = 0f
     private var pointerY = 0f
-    private var mTextColor = Color.BLACK
-    private var mClockColor = Color.parseColor("#F57C00")
-    private var mPointerColor = Color.parseColor("#0FDA71")
-    private var mCanvasColor = Color.TRANSPARENT
+    private var mTextColor: Int = Color.BLACK
+    private var mTrackColor: Int = Color.parseColor("#F57C00")
+    private var mPointerColor: Int = Color.parseColor("#0FDA71")
+    private var mCanvasColor: Int = Color.TRANSPARENT
+    private var mClockFaceColor: Int = Color.WHITE
+    private var mDisabledTextColor: Int = mTextColor.withAlpha(PICKER_DEFAULT_DISABLED_ALPHA)
+    private var mDisabledTrackColor: Int = mTrackColor.withAlpha(PICKER_DEFAULT_DISABLED_ALPHA)
+    private var mDisabledPointerColor: Int = mPointerColor.withAlpha(PICKER_DEFAULT_DISABLED_ALPHA)
+    private var mDisabledCanvasColor: Int = mCanvasColor.withAlpha(PICKER_DEFAULT_DISABLED_ALPHA)
+    private var mDisabledClockFaceColor: Int = mClockFaceColor
+        .withAlpha(PICKER_DEFAULT_DISABLED_ALPHA)
+    private var currentTextColor: Int = mTextColor
+    private var currentTrackColor: Int = mTrackColor
+    private var currentPointerColor: Int = mPointerColor
+    private var currentCanvasColor: Int = mCanvasColor
+    private var currentClockFaceColor: Int = mClockFaceColor
     private var mTrackSize: Float = -1F
     private var mPointerRadius: Float = -1F
-
     /**
      * 00:00 -> -0.5 * PI
      *
@@ -99,12 +106,24 @@ class TimePicker : View {
     private var mIs24Hour: Boolean = DateFormat.is24HourFormat(context)
     private val degreesFromClockStart: Double
         get() = (Math.toDegrees(angleRadians) + DEGREE_FOR_FULL_ANGLE + DEGREE_FOR_CLOCK_START) %
-            DEGREE_FOR_FULL_ANGLE
+                DEGREE_FOR_FULL_ANGLE
 
-    var clockColor: Int
-        get() = mClockColor
+    private val timeTextSize: Float
+        get() = minOfWidthAndHeight * 0.2F
+
+    private val amPmTextSize: Float
+        get() = minOfWidthAndHeight * 0.1F
+
+    private val timeTextOffsetY: Float
+        get() = timeTextSize * 0.25F
+
+    private val amPmTextOffsetY: Float
+        get() = amPmTextSize * 2
+
+    var clockFaceColor: Int
+        get() = mClockFaceColor
         set(value) {
-            mClockColor = value
+            mClockFaceColor = value
             invalidate()
         }
 
@@ -126,6 +145,48 @@ class TimePicker : View {
         get() = mCanvasColor
         set(value) {
             mCanvasColor = value
+            invalidate()
+        }
+
+    var trackColor: Int
+        get() = mTrackColor
+        set(value) {
+            mTrackColor = value
+            invalidate()
+        }
+
+    var disabledClockFaceColor: Int
+        get() = mDisabledClockFaceColor
+        set(value) {
+            mDisabledClockFaceColor = value
+            invalidate()
+        }
+
+    var disabledPointerColor: Int
+        get() = mDisabledPointerColor
+        set(value) {
+            mDisabledPointerColor = value
+            invalidate()
+        }
+
+    var disabledTextColor: Int
+        get() = mDisabledTextColor
+        set(value) {
+            mDisabledTextColor = value
+            invalidate()
+        }
+
+    var disabledCanvasColor: Int
+        get() = mDisabledCanvasColor
+        set(value) {
+            mDisabledCanvasColor = value
+            invalidate()
+        }
+
+    var disabledTrackColor: Int
+        get() = mDisabledTrackColor
+        set(value) {
+            mDisabledTrackColor = value
             invalidate()
         }
 
@@ -198,13 +259,13 @@ class TimePicker : View {
         }
 
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) :
-        super(context, attrs, defStyleAttr) {
+            super(context, attrs, defStyleAttr) {
         initAttributeDependentProps(attrs)
         initProperties()
     }
 
     constructor(context: Context, attrs: AttributeSet) :
-        super(context, attrs) {
+            super(context, attrs) {
         initAttributeDependentProps(attrs)
         initProperties()
     }
@@ -213,40 +274,35 @@ class TimePicker : View {
         initProperties()
     }
 
-    private fun setTimeFromAngle() {
-        val degreesCorrected: Double = degreesFromClockStart
-
-        if (is24Hour) {
-            hour = (degreesCorrected / DEGREE_STEP_FOR_1HOUR_IN_24H_CLOCK)
-                .toInt() % HOURS_IN_DAY
-            minute = (degreesCorrected / DEGREE_STEP_FOR_1MINUTE_IN_24H_CLOCK)
-                .toInt() % MINUTES_IN_HOUR
-            timeTextCache.setTime(hour, minute)
-            return
-        }
-        val prevHourAmPm: Int = hour % HOURS_IN_HALF_DAY
-        val hourAmPm: Int = (degreesCorrected / DEGREE_STEP_FOR_1HOUR_IN_12H_CLOCK)
-            .toInt() % HOURS_IN_HALF_DAY
-        minute = (degreesCorrected / DEGREE_STEP_FOR_1MINUTE_IN_12H_CLOCK)
-            .toInt() % MINUTES_IN_HOUR
-        var isAm = isAm
-
-        if (hourAmPm == 0 && prevHourAmPm == 11 || hourAmPm == 11 && prevHourAmPm == 0) {
-            isAm = !isAm
-        }
-        hour = if (!isAm) hourAmPm + HOURS_IN_HALF_DAY else hourAmPm
-        timeTextCache.setTime(if (hourAmPm == 0) HOURS_IN_HALF_DAY else hourAmPm, minute)
-        amPmTextCache.isAm = isAm
-    }
-
     private fun initAttributeDependentProps(attrs: AttributeSet) {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.TimePicker)
 
         try {
-            mTextColor = typedArray.getColor(R.styleable.TimePicker_textColor, mTextColor)
-            mPointerColor = typedArray.getColor(R.styleable.TimePicker_pointerColor, mPointerColor)
-            mClockColor = typedArray.getColor(R.styleable.TimePicker_clockColor, mClockColor)
             mCanvasColor = typedArray.getColor(R.styleable.TimePicker_canvasColor, mCanvasColor)
+            mClockFaceColor = typedArray.getColor(R.styleable.TimePicker_clockFaceColor, mClockFaceColor)
+            mPointerColor = typedArray.getColor(R.styleable.TimePicker_pointerColor, mPointerColor)
+            mTextColor = typedArray.getColor(R.styleable.TimePicker_textColor, mTextColor)
+            mTrackColor = typedArray.getColor(R.styleable.TimePicker_trackColor, mTrackColor)
+            mDisabledCanvasColor = typedArray.getColor(
+                R.styleable.TimePicker_disabledCanvasColor,
+                mCanvasColor.withAlpha(PICKER_DEFAULT_DISABLED_ALPHA))
+
+            mDisabledClockFaceColor = typedArray.getColor(
+                R.styleable.TimePicker_disabledClockFaceColor,
+                mClockFaceColor.withAlpha(PICKER_DEFAULT_DISABLED_ALPHA))
+
+            mDisabledPointerColor = typedArray.getColor(
+                R.styleable.TimePicker_disabledPointerColor,
+                mPointerColor.withAlpha(PICKER_DEFAULT_DISABLED_ALPHA))
+
+            mDisabledTextColor = typedArray.getColor(
+                R.styleable.TimePicker_disabledTextColor,
+                mTextColor.withAlpha(PICKER_DEFAULT_DISABLED_ALPHA))
+
+            mDisabledTrackColor = typedArray.getColor(
+                R.styleable.TimePicker_disabledTrackColor,
+                mTrackColor.withAlpha(PICKER_DEFAULT_DISABLED_ALPHA))
+
             mTrackSize = typedArray.getDimension(R.styleable.TimePicker_trackSize, mTrackSize)
             mPointerRadius = typedArray.getDimension(R.styleable.TimePicker_pointerRadius, mPointerRadius)
             mIs24Hour = typedArray.getBoolean(R.styleable.TimePicker_is24Hour, mIs24Hour)
@@ -283,9 +339,49 @@ class TimePicker : View {
         calculatePointerPosition(angleRadians)
     }
 
+    private fun setTimeFromAngle() {
+        val degreesCorrected: Double = degreesFromClockStart
+
+        if (is24Hour) {
+            hour = (degreesCorrected / DEGREE_STEP_FOR_1HOUR_IN_24H_CLOCK)
+                .toInt() % HOURS_IN_DAY
+            minute = (degreesCorrected / DEGREE_STEP_FOR_1MINUTE_IN_24H_CLOCK)
+                .toInt() % MINUTES_IN_HOUR
+            timeTextCache.setTime(hour, minute)
+            return
+        }
+        val prevHourAmPm: Int = hour % HOURS_IN_HALF_DAY
+        val hourAmPm: Int = (degreesCorrected / DEGREE_STEP_FOR_1HOUR_IN_12H_CLOCK)
+            .toInt() % HOURS_IN_HALF_DAY
+        minute = (degreesCorrected / DEGREE_STEP_FOR_1MINUTE_IN_12H_CLOCK)
+            .toInt() % MINUTES_IN_HOUR
+        var isAm = isAm
+
+        if (hourAmPm == 0 && prevHourAmPm == 11 || hourAmPm == 11 && prevHourAmPm == 0) {
+            isAm = !isAm
+        }
+        hour = if (!isAm) hourAmPm + HOURS_IN_HALF_DAY else hourAmPm
+        timeTextCache.setTime(if (hourAmPm == 0) HOURS_IN_HALF_DAY else hourAmPm, minute)
+        amPmTextCache.isAm = isAm
+    }
+
     override fun setEnabled(enabled: Boolean) {
         super.setEnabled(enabled)
-        paintAlpha = if (enabled) PICKER_ENABLED_ALPHA else PICKER_DISABLED_ALPHA
+
+        if (enabled) {
+            currentTextColor = mTextColor
+            currentTrackColor = mTrackColor
+            currentPointerColor = mPointerColor
+            currentCanvasColor = mCanvasColor
+            currentClockFaceColor = mClockFaceColor
+        }
+        else {
+            currentTextColor = mDisabledTextColor
+            currentTrackColor = mDisabledTrackColor
+            currentPointerColor = mDisabledPointerColor
+            currentCanvasColor = mDisabledCanvasColor
+            currentClockFaceColor = mDisabledClockFaceColor
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -294,45 +390,51 @@ class TimePicker : View {
         minOfWidthAndHeight = min(width, height)
         setMeasuredDimension(minOfWidthAndHeight.toInt(), minOfWidthAndHeight.toInt())
 
+        radius = minOfWidthAndHeight * 0.4F
         offset = minOfWidthAndHeight * 0.5f
-        val padding = minOfWidthAndHeight / 20
-        radius = minOfWidthAndHeight / 2 - padding * 2
         pointerRadius = mPointerRadius
         trackSize = mTrackSize
-        rectF[-radius, -radius, radius] = radius
         calculatePointerPosition(angleRadians)
     }
 
     private fun drawText(canvas: Canvas) {
         paint.style = Paint.Style.FILL
-        paint.color = mTextColor
-        paint.alpha = paintAlpha
-        paint.textSize = minOfWidthAndHeight / 5
+        paint.color = currentTextColor
+        paint.alpha = currentTextColor.alpha
+        paint.textSize = timeTextSize
 
         canvas.drawText(
-            timeTextCache.buffer, 0, TimeTextCache.SIZE, 0f, paint.textSize / 4, paint)
+            timeTextCache.buffer, 0, TimeTextCache.SIZE, 0f, timeTextOffsetY, paint)
 
         if (!is24Hour) {
-            paint.textSize = minOfWidthAndHeight / 10
+            paint.textSize = amPmTextSize
 
             canvas.drawText(
-                amPmTextCache.buffer, 0, AmPmTextCache.SIZE, 0f, paint.textSize * 2, paint)
+                amPmTextCache.buffer, 0, AmPmTextCache.SIZE, 0f, amPmTextOffsetY, paint)
         }
     }
 
-    private fun drawClockDial(canvas: Canvas) {
+    private fun drawClockFace(canvas: Canvas) {
+        paint.style = Paint.Style.FILL
+        paint.color = currentClockFaceColor
+        paint.alpha = currentClockFaceColor.alpha
+
+        canvas.drawCircle(0F, 0F, radius, paint)
+    }
+
+    private fun drawClockTrack(canvas: Canvas) {
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = mTrackSize
-        paint.color = mClockColor
-        paint.alpha = paintAlpha
+        paint.color = currentTrackColor
+        paint.alpha = currentTrackColor.alpha
 
-        canvas.drawOval(rectF, paint)
+        canvas.drawCircle(0F, 0F, radius, paint)
     }
 
     private fun drawPointer(canvas: Canvas) {
         paint.style = Paint.Style.FILL
-        paint.color = mPointerColor
-        paint.alpha = paintAlpha
+        paint.color = currentPointerColor
+        paint.alpha = currentPointerColor.alpha
 
         canvas.drawCircle(pointerX, pointerY, pointerRadius, paint)
     }
@@ -340,19 +442,22 @@ class TimePicker : View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         canvas.translate(offset, offset)
-        canvas.drawColor(mCanvasColor)
+        canvas.drawColor(currentCanvasColor)
+        drawClockFace(canvas)
         drawText(canvas)
-        drawClockDial(canvas)
+        drawClockTrack(canvas)
         drawPointer(canvas)
     }
 
+    /**
+     * @param posX x component of position with origin in center of the canvas.
+     * @param posY y component of position with origin in center of the canvas.
+     **/
     private fun onMotionActionDown(posX: Float, posY: Float): Boolean {
         calculatePointerPosition(angleRadians)
 
         if (posX >= pointerX - pointerRadius && posX <= pointerX + pointerRadius &&
             posY >= pointerY - pointerRadius && posY <= pointerY + pointerRadius) {
-            slopX = posX - pointerX
-            slopY = posY - pointerY
             isMoving = true
             invalidate()
             performClick()
@@ -363,6 +468,7 @@ class TimePicker : View {
 
         if (isTrackTouchable && distance <= radius + mTrackSize && distance >= radius - mTrackSize) {
             angleRadians = atan2(posY.toDouble(), posX.toDouble())
+            calculatePointerPosition(angleRadians)
             setTimeFromAngle()
             timeChangedListener?.timeChanged(time)
             isMoving = true
@@ -374,18 +480,27 @@ class TimePicker : View {
         return false
     }
 
+    /**
+     * @param posX x component of position with origin in center of the canvas.
+     * @param posY y component of position with origin in center of the canvas.
+     **/
     private fun onMotionActionMove(posX: Float, posY: Float): Boolean {
         if (!isMoving) {
             parent.requestDisallowInterceptTouchEvent(false)
             return false
         }
-        angleRadians = atan2(posY - slopY.toDouble(), posX - slopX.toDouble())
+        angleRadians = atan2(posY.toDouble(), posX.toDouble())
         calculatePointerPosition(angleRadians)
         setTimeFromAngle()
         timeChangedListener?.timeChanged(time)
         invalidate()
 
         return true
+    }
+
+    private fun onMotionActionUp() {
+        isMoving = false
+        invalidate()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -401,17 +516,14 @@ class TimePicker : View {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> return onMotionActionDown(posX, posY)
             MotionEvent.ACTION_MOVE -> return onMotionActionMove(posX, posY)
-            MotionEvent.ACTION_UP -> {
-                isMoving = false
-                invalidate()
-            }
+            MotionEvent.ACTION_UP -> onMotionActionUp()
         }
         return true
     }
 
     private fun calculatePointerPosition(angle: Double) {
-        pointerX = (radius * cos(angle)).toFloat()
-        pointerY = (radius * sin(angle)).toFloat()
+        pointerX = radius * cos(angle).toFloat()
+        pointerY = radius * sin(angle).toFloat()
     }
 
     private fun calculate24HAngleFromTime(hour: Int, minute: Int) {
