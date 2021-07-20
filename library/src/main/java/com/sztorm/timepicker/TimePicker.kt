@@ -13,6 +13,9 @@ import android.view.MotionEvent
 import android.view.View
 import com.sztorm.timepicker.IntColorExtensions.Companion.alpha
 import com.sztorm.timepicker.IntColorExtensions.Companion.withAlpha
+import com.sztorm.timepicker.colliders.CanvasColliderExtensions.Companion.drawCircle
+import com.sztorm.timepicker.colliders.CircleCollider
+import com.sztorm.timepicker.colliders.RingCollider
 import java.util.*
 import kotlin.math.*
 
@@ -65,11 +68,10 @@ class TimePicker : View {
     }
 
     private val paint = Paint()
+    private val pointerCollider = CircleCollider(centerX = 0F, centerY = 0F, radius = -1F)
+    private val trackCollider = RingCollider(centerX = 0F, centerY = 0F, radius = -1F, size = -1F)
     private var minOfWidthAndHeight = 0f
-    private var radius = 0f
-    private var offset = 0f
-    private var pointerX = 0f
-    private var pointerY = 0f
+    private var canvasOffset = 0f
     private var mTextColor: Int = Color.BLACK
     private var mTrackColor: Int = Color.parseColor("#F57C00")
     private var mPointerColor: Int = Color.parseColor("#0FDA71")
@@ -86,8 +88,6 @@ class TimePicker : View {
     private var currentPointerColor: Int = mPointerColor
     private var currentCanvasColor: Int = mCanvasColor
     private var currentClockFaceColor: Int = mClockFaceColor
-    private var mTrackSize: Float = -1F
-    private var mPointerRadius: Float = -1F
     /**
      * 00:00 -> -0.5 * PI
      *
@@ -191,19 +191,18 @@ class TimePicker : View {
         }
 
     var trackSize: Float
-        get() = mTrackSize
+        get() = trackCollider.size
         set(value) {
-            mTrackSize = when {
+            trackCollider.size = when {
                 value <= 0 -> (minOfWidthAndHeight / 25)
-                //mPointerRadius > 0 && value > 2 * mPointerRadius -> (minOfWidthAndHeight / 25)
                 else -> value
             }
         }
 
     var pointerRadius: Float
-        get() = mPointerRadius
+        get() = pointerCollider.radius
         set(value) {
-            mPointerRadius = if (value <= 0) (radius / 7) else value
+            pointerCollider.radius = if (value <= 0) (trackCollider.radius / 7) else value
         }
 
     /**
@@ -279,7 +278,9 @@ class TimePicker : View {
 
         try {
             mCanvasColor = typedArray.getColor(R.styleable.TimePicker_canvasColor, mCanvasColor)
-            mClockFaceColor = typedArray.getColor(R.styleable.TimePicker_clockFaceColor, mClockFaceColor)
+            mClockFaceColor = typedArray.getColor(
+                R.styleable.TimePicker_clockFaceColor, mClockFaceColor)
+
             mPointerColor = typedArray.getColor(R.styleable.TimePicker_pointerColor, mPointerColor)
             mTextColor = typedArray.getColor(R.styleable.TimePicker_textColor, mTextColor)
             mTrackColor = typedArray.getColor(R.styleable.TimePicker_trackColor, mTrackColor)
@@ -303,10 +304,17 @@ class TimePicker : View {
                 R.styleable.TimePicker_disabledTrackColor,
                 mTrackColor.withAlpha(PICKER_DEFAULT_DISABLED_ALPHA))
 
-            mTrackSize = typedArray.getDimension(R.styleable.TimePicker_trackSize, mTrackSize)
-            mPointerRadius = typedArray.getDimension(R.styleable.TimePicker_pointerRadius, mPointerRadius)
+            trackCollider.size = typedArray.getDimension(
+                R.styleable.TimePicker_trackSize, trackCollider.size)
+
+            pointerCollider.radius = typedArray.getDimension(
+                R.styleable.TimePicker_pointerRadius, pointerCollider.radius)
+
             mIs24Hour = typedArray.getBoolean(R.styleable.TimePicker_is24Hour, mIs24Hour)
-            isTrackTouchable = typedArray.getBoolean(R.styleable.TimePicker_isTrackTouchable, isTrackTouchable)
+
+            isTrackTouchable = typedArray.getBoolean(
+                R.styleable.TimePicker_isTrackTouchable, isTrackTouchable)
+
             invalidate()
         }
         finally {
@@ -329,8 +337,8 @@ class TimePicker : View {
             calculate24HAngleFromTime(hour, minute)
         }
         else {
-            var amPmHour: Int = hour % 12
-            amPmHour = if (hour == 0) 12 else amPmHour
+            var amPmHour: Int = hour % HOURS_IN_HALF_DAY
+            amPmHour = if (hour == 0) HOURS_IN_HALF_DAY else amPmHour
 
             timeTextCache.setTime(amPmHour, minute)
             amPmTextCache.isAm = isAm
@@ -390,10 +398,10 @@ class TimePicker : View {
         minOfWidthAndHeight = min(width, height)
         setMeasuredDimension(minOfWidthAndHeight.toInt(), minOfWidthAndHeight.toInt())
 
-        radius = minOfWidthAndHeight * 0.4F
-        offset = minOfWidthAndHeight * 0.5f
-        pointerRadius = mPointerRadius
-        trackSize = mTrackSize
+        trackCollider.radius = minOfWidthAndHeight * 0.4F
+        canvasOffset = minOfWidthAndHeight * 0.5f
+        pointerRadius = pointerCollider.radius
+        trackSize = trackCollider.size
         calculatePointerPosition(angleRadians)
     }
 
@@ -419,16 +427,16 @@ class TimePicker : View {
         paint.color = currentClockFaceColor
         paint.alpha = currentClockFaceColor.alpha
 
-        canvas.drawCircle(0F, 0F, radius, paint)
+        canvas.drawCircle(trackCollider, paint)
     }
 
     private fun drawClockTrack(canvas: Canvas) {
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = mTrackSize
+        paint.strokeWidth = trackCollider.size
         paint.color = currentTrackColor
         paint.alpha = currentTrackColor.alpha
 
-        canvas.drawCircle(0F, 0F, radius, paint)
+        canvas.drawCircle(trackCollider, paint)
     }
 
     private fun drawPointer(canvas: Canvas) {
@@ -436,12 +444,12 @@ class TimePicker : View {
         paint.color = currentPointerColor
         paint.alpha = currentPointerColor.alpha
 
-        canvas.drawCircle(pointerX, pointerY, pointerRadius, paint)
+        canvas.drawCircle(pointerCollider, paint)
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        canvas.translate(offset, offset)
+        canvas.translate(canvasOffset, canvasOffset)
         canvas.drawColor(currentCanvasColor)
         drawClockFace(canvas)
         drawText(canvas)
@@ -450,24 +458,21 @@ class TimePicker : View {
     }
 
     /**
-     * @param posX x component of position with origin in center of the canvas.
-     * @param posY y component of position with origin in center of the canvas.
+     * @param touchX x component of touch position with origin in center of the canvas.
+     * @param touchY y component of touch position with origin in center of the canvas.
      **/
-    private fun onMotionActionDown(posX: Float, posY: Float): Boolean {
+    private fun onMotionActionDown(touchX: Float, touchY: Float): Boolean {
         calculatePointerPosition(angleRadians)
 
-        if (posX >= pointerX - pointerRadius && posX <= pointerX + pointerRadius &&
-            posY >= pointerY - pointerRadius && posY <= pointerY + pointerRadius) {
+        if (pointerCollider.isCollidingWith(touchX, touchY)) {
             isMoving = true
             invalidate()
             performClick()
 
             return true
         }
-        val distance = sqrt(posX * posX + posY * posY)
-
-        if (isTrackTouchable && distance <= radius + mTrackSize && distance >= radius - mTrackSize) {
-            angleRadians = atan2(posY.toDouble(), posX.toDouble())
+        if (isTrackTouchable && trackCollider.isCollidingWith(touchX, touchY)) {
+            angleRadians = atan2(touchY.toDouble(), touchX.toDouble())
             calculatePointerPosition(angleRadians)
             setTimeFromAngle()
             timeChangedListener?.timeChanged(time)
@@ -481,15 +486,15 @@ class TimePicker : View {
     }
 
     /**
-     * @param posX x component of position with origin in center of the canvas.
-     * @param posY y component of position with origin in center of the canvas.
+     * @param touchX x component of touch position with origin in center of the canvas.
+     * @param touchY y component of touch position with origin in center of the canvas.
      **/
-    private fun onMotionActionMove(posX: Float, posY: Float): Boolean {
+    private fun onMotionActionMove(touchX: Float, touchY: Float): Boolean {
         if (!isMoving) {
             parent.requestDisallowInterceptTouchEvent(false)
             return false
         }
-        angleRadians = atan2(posY.toDouble(), posX.toDouble())
+        angleRadians = atan2(touchY.toDouble(), touchX.toDouble())
         calculatePointerPosition(angleRadians)
         setTimeFromAngle()
         timeChangedListener?.timeChanged(time)
@@ -510,20 +515,20 @@ class TimePicker : View {
         }
         parent.requestDisallowInterceptTouchEvent(true)
 
-        val posX: Float = event.x - offset
-        val posY: Float = event.y - offset
+        val touchX: Float = event.x - canvasOffset
+        val touchY: Float = event.y - canvasOffset
 
         when (event.action) {
-            MotionEvent.ACTION_DOWN -> return onMotionActionDown(posX, posY)
-            MotionEvent.ACTION_MOVE -> return onMotionActionMove(posX, posY)
+            MotionEvent.ACTION_DOWN -> return onMotionActionDown(touchX, touchY)
+            MotionEvent.ACTION_MOVE -> return onMotionActionMove(touchX, touchY)
             MotionEvent.ACTION_UP -> onMotionActionUp()
         }
         return true
     }
 
     private fun calculatePointerPosition(angle: Double) {
-        pointerX = radius * cos(angle).toFloat()
-        pointerY = radius * sin(angle).toFloat()
+        pointerCollider.centerX = trackCollider.radius * cos(angle).toFloat()
+        pointerCollider.centerY = trackCollider.radius * sin(angle).toFloat()
     }
 
     private fun calculate24HAngleFromTime(hour: Int, minute: Int) {
