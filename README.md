@@ -3,8 +3,11 @@ A customizable time picker component for Android. This is a fork of [ugurtekbas'
 
 Minimum API level: **16 (Jelly Bean 4.1.x)**
 
-<img src="assets/timepicker-pic-02.png" alt="timepicker picture 2" width=450 height=925>
+[![](https://jitpack.io/v/Sztorm/TimePicker.svg)](https://jitpack.io/#Sztorm/TimePicker)
+
 <img src="assets/timepicker-pic-01.png" alt="timepicker picture 1" width=450 height=925>
+<img src="assets/timepicker-pic-02.png" alt="timepicker picture 2" width=450 height=925>
+<img src="assets/timepicker-pic-03.png" alt="timepicker picture 3" width=450 height=925>
 <img src="assets/timepicker-gif-01.gif" alt="timepicker picture 2" width=450 height=925>
 
 ## Usage
@@ -23,7 +26,7 @@ repositories {
 Add it to your app build.gradle
 ```groovy
 dependencies {
-    implementation 'com.github.Sztorm:TimePicker:1.0.1'
+    implementation 'com.github.Sztorm:TimePicker:1.1.0'
 }
 ```
 
@@ -33,12 +36,17 @@ dependencies {
 <com.sztorm.timepicker.TimePicker
     android:id="@+id/picker"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
+    android:layout_height="match_content"
     app:canvasColor="#EEEEDD"
-    app:clockColor="#785757"
+    app:clockFaceColor="#EEEEEE"
     app:pointerColor="#FF5555"
+    app:trackColor="#785757"
     app:textColor="#285510"
+    app:disabledCanvasColor="#EEEEDD"
+    app:disabledClockFaceColor="#EEEEEE"
+    app:disabledPointerColor="#705B5B"
+    app:disabledTrackColor="#595151"
+    app:disabledTextColor="#6C8061"
     app:trackSize="40dp"
     app:pointerRadius="25dp"
     app:is24Hour="true"
@@ -47,7 +55,7 @@ dependencies {
 
 ### Setting attributes programmatically
 
-This is an exact equivalent to picker above.
+This is an exact equivalent to the picker above.
 
 ```xml
 <com.sztorm.timepicker.TimePicker
@@ -65,9 +73,15 @@ fun dpToPx(dp: Float): Float = TypedValue
 val picker: TimePicker = view.findViewById(R.id.picker)
 
 picker.canvasColor = Color.parseColor("#EEEEDD")
-picker.clockColor = Color.parseColor("#785757")
+picker.clockFaceColor = Color.parseColor("#EEEEEE")
 picker.pointerColor = Color.parseColor("#FF5555")
+picker.trackColor = Color.parseColor("#785757")
 picker.textColor = Color.parseColor("#285510")
+picker.disabledCanvasColor = Color.parseColor("#EEEEDD")
+picker.disabledClockFaceColor = Color.parseColor("#EEEEEE")
+picker.disabledPointerColor = Color.parseColor("#705B5B")
+picker.disabledTrackColor = Color.parseColor("#595151")
+picker.disabledTextColor = Color.parseColor("#6C8061")
 picker.trackSize = dpToPx(40F)
 picker.pointerRadius = dpToPx(25F)
 picker.is24Hour = true
@@ -123,12 +137,36 @@ val isPm: Boolean = picker.isPm
 // The is24Hour property can be mutated to change picker's behavior to show 12-hour or 24-hour
 // formatted time.
 // In case of getting the information whether the picker is displaying 24-hour formatted time,
-// is24Hour can be safely get and not cause picker's state mutation.
+// is24Hour can be safely get without causing picker's state mutation.
 val is24HourFormat = picker.is24Hour
 
 if (is24HourFormat) {
     picker.is24Hour = false
 }
+```
+
+ * Working with *PickedTime*
+ 
+```kotlin
+// When PickedTime is obtained via TimePicker's time property it is no longer dependent from
+// TimePicker and can be safely passed everywhere.
+val pickedTime: PickedTime = picker.time
+
+// PickedTime offers time related properties that work exactly like their equivalents in
+// TimePicker class.
+val hour: Int = pickedTime.hour
+val hourFormatted: Int = pickedTime.hourFormatted
+val minute: Int = pickedTime.minute
+val is24Hour: Boolean = pickedTime.is24Hour
+val isAm: Boolean = pickedTime.isAm
+val isPm: Boolean = pickedTime.isPm
+
+// PickedTime can be converted to String with format chosen by the user.
+val timeIn24HFormat: String = pickedTime.toString24HourFormat()
+val timeIn12HFormat: String = pickedTime.toString12HourFormat()
+
+// toString() returns picked time String with time format specified by is24Hour property.
+val timeAutoFormat: String = timepickedTime.toString()
 ```
 
 ## License
