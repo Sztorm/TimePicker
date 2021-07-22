@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.annotation.ColorRes
@@ -14,6 +15,7 @@ import androidx.fragment.app.Fragment
 import com.sztorm.timepicker.PickedTime
 import com.sztorm.timepicker.TimePicker
 import com.sztorm.timepicker.TimeChangedListener
+import com.sztorm.timepicker.TwoStepTimePicker
 import com.sztorm.timepickerdemo.timepickerdemo.R
 
 class MainFragment : Fragment() {
@@ -79,6 +81,15 @@ class MainFragment : Fragment() {
         checkBox.setOnCheckedChangeListener { _, isChecked -> picker.isEnabled = isChecked }
     }
 
+    private fun set24HTwoStepPickerLayout(view: View) {
+        val picker: TwoStepTimePicker = view.findViewById(R.id.picker)
+        val resetButton: Button = view.findViewById(R.id.switchPickStepButton)
+
+        resetButton.setOnClickListener {
+            picker.pickedStep = !picker.pickedStep
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(layoutID, container, false)
@@ -86,6 +97,7 @@ class MainFragment : Fragment() {
         when (layoutID) {
             R.layout.layout_12h_picker -> set12HPickerLayout(view)
             R.layout.layout_24h_picker -> set24HPickerLayout(view)
+            R.layout.layout_24h_twosteppicker -> set24HTwoStepPickerLayout(view)
         }
         return view
     }

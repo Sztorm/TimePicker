@@ -13,7 +13,11 @@ class MainActivity : AppCompatActivity() {
 
         title = resources.getString(R.string.appTitle)
         val viewPager: ViewPager2 = findViewById(R.id.viewPager)
-        val layoutIDs = intArrayOf(R.layout.layout_24h_picker, R.layout.layout_12h_picker)
+        val layoutIDs = intArrayOf(
+            R.layout.layout_24h_picker,
+            R.layout.layout_12h_picker,
+            R.layout.layout_12h_twosteppicker,
+            R.layout.layout_24h_twosteppicker)
 
         viewPager.adapter = ActivityAdapter(this, layoutIDs)
     }

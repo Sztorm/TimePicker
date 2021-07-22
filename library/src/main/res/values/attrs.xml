@@ -16,4 +16,22 @@
         <attr name="is24Hour" format="boolean" />
         <attr name="isTrackTouchable" format="boolean" />
     </declare-styleable>
+    <declare-styleable name="TwoStepTimePicker" parent="TimePicker">
+        <attr name="canvasColor" />
+        <attr name="clockFaceColor" />
+        <attr name="pointerColor" />
+        <attr name="trackColor" />
+        <attr name="textColor" />
+        <attr name="disabledCanvasColor" />
+        <attr name="disabledClockFaceColor" />
+        <attr name="disabledPointerColor" />
+        <attr name="disabledTrackColor" />
+        <attr name="disabledTextColor" />
+        <attr name="trackSize" />
+        <attr name="pointerRadius" />
+        <attr name="is24Hour" />
+        <attr name="isTrackTouchable" />
+        <attr name="pickedTextColor" format="color" />
+        <attr name="disabledPickedTextColor" format="color" />
+    </declare-styleable>
 </resources>

@@ -5,4 +5,5 @@
     <string name="pickerEnable">Picker enabled</string>
     <string name="time24Time">24-hour time</string>
     <string name="time12Time">12-hour time</string>
+    <string name="switchPick">Switch</string>
 </resources>
