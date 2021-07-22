@@ -17,6 +17,7 @@ import com.sztorm.timepicker.TimePicker
 import com.sztorm.timepicker.TimeChangedListener
 import com.sztorm.timepicker.TwoStepTimePicker
 import com.sztorm.timepickerdemo.timepickerdemo.R
+import java.util.*
 
 class MainFragment : Fragment() {
     companion object {
@@ -84,6 +85,11 @@ class MainFragment : Fragment() {
     private fun set24HTwoStepPickerLayout(view: View) {
         val picker: TwoStepTimePicker = view.findViewById(R.id.picker)
         val resetButton: Button = view.findViewById(R.id.switchPickStepButton)
+        val calendar = Calendar.getInstance()
+        calendar[Calendar.HOUR_OF_DAY] = 13
+        calendar[Calendar.MINUTE] = 37
+
+        picker.setTime(calendar, TwoStepTimePicker.FORMAT_24HOUR)
 
         resetButton.setOnClickListener {
             picker.pickedStep = !picker.pickedStep

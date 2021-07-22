@@ -1,6 +1,6 @@
 package com.sztorm.timepicker
 
-internal class AmPmTextCache {
+class AmPmTextCache {
     companion object {
         const val SIZE: Int = 2
     }
