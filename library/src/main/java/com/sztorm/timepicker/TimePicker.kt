@@ -213,7 +213,7 @@ open class TimePicker : View {
             if (mIs24Hour == value) {
                 return
             }
-            if (!value) {
+            if (value) {
                 setTime(hour, minute)
             }
             else {
