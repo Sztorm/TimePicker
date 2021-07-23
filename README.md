@@ -5,10 +5,11 @@ Minimum API level: **16 (Jelly Bean 4.1.x)**
 
 [![](https://jitpack.io/v/Sztorm/TimePicker.svg)](https://jitpack.io/#Sztorm/TimePicker)
 
-<img src="assets/timepicker-pic-01.png" alt="timepicker picture 1" width=450 height=925>
-<img src="assets/timepicker-pic-02.png" alt="timepicker picture 2" width=450 height=925>
-<img src="assets/timepicker-pic-03.png" alt="timepicker picture 3" width=450 height=925>
-<img src="assets/timepicker-gif-01.gif" alt="timepicker picture 2" width=450 height=925>
+<img src="assets/timepicker-pic-01.png" alt="time picker picture 1" width=360 height=740> <img src="assets/timepicker-pic-02.png" alt="time picker picture 2" width=360 height=740>
+
+<img src="assets/timepicker-gif-01.gif" alt="time picker gif 2" width=360 height=740> <img src="assets/twosteptimepicker-gif-01.gif" alt="two-step time picker gif 1" width=360 height=740>
+
+<img src="assets/timepicker-pic-03.png" alt="time picker picture 3" width=360 height=740> <img src="assets/twosteptimepicker-pic-01.png" alt="two-step time picker picture 1" width=360 height=740>
 
 ## Usage
 
@@ -26,11 +27,13 @@ repositories {
 Add it to your app build.gradle
 ```groovy
 dependencies {
-    implementation 'com.github.Sztorm:TimePicker:1.1.0'
+    implementation 'com.github.Sztorm:TimePicker:1.2.0'
 }
 ```
 
-### Setting attributes via XML
+### TimePicker
+
+ * Setting attributes via XML
 
 ```xml
 <com.sztorm.timepicker.TimePicker
@@ -53,8 +56,8 @@ dependencies {
     app:isTrackTouchable="true" />
 ```
 
-### Setting attributes programmatically
-
+ * Setting attributes programmatically
+ 
 This is an exact equivalent to the picker above.
 
 ```xml
@@ -88,8 +91,6 @@ picker.is24Hour = true
 picker.isTrackTouchable = true
 ```
 
-### Other useful features
-
  * Setting time
 
 ```kotlin
@@ -104,7 +105,7 @@ val calendar = Calendar.getInstance()
 calendar[Calendar.HOUR_OF_DAY] = 16
 calendar[Calendar.MINUTE] = 20
 
-amPmPicker.setTime(calendar, is24Hour = true)
+picker.setTime(calendar, TimePicker.FORMAT_24HOUR)
 ```
 
  * Setting timeChangedListener
@@ -145,7 +146,7 @@ if (is24HourFormat) {
 }
 ```
 
- * Working with *PickedTime*
+### PickedTime
  
 ```kotlin
 // When PickedTime is obtained via TimePicker's time property it is no longer dependent from
@@ -167,6 +168,56 @@ val timeIn12HFormat: String = pickedTime.toString12HourFormat()
 
 // toString() returns picked time String with time format specified by is24Hour property.
 val timeAutoFormat: String = timepickedTime.toString()
+```
+ 
+### TwoStepTimePicker
+ 
+*TwoStepTimePicker* is a time picker that divides setting time into two steps:
+ * Setting hour
+ * Setting minute
+ 
+When hour is selected, then picker continues to select minute. You can however go back to setting
+hour or minute by clicking on appropriate text.
+
+As *TwoStepTimePicker* derives from *TimePicker*, all previous examples are working the same way
+with following additions:
+
+ * Setting TwoStepTimePicker-related attributes via xml
+
+```xml
+<com.sztorm.timepicker.TwoStepTimePicker
+    android:id="@+id/picker"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:pickedTextColor="#D57A17"
+    app:disabledPickedTextColor="#71665A" />
+```
+
+ * Setting attributes programmatically
+ 
+```kotlin
+val picker: TimePicker = view.findViewById(R.id.picker)
+picker.pickedTextColor = Color.parseColor("#D57A17")
+picker.disabledPickedTextColor = Color.parseColor("#71665A")
+```
+
+ * Mutating picked step state
+
+```kotlin
+val currentPickedStep: Boolean = picker.pickedStep
+
+// Switching picked step to an hour
+picker.pickedStep = TwoStepTimePicker.HOUR_PICK_STEP
+
+// Switching picked step to a minute
+picker.pickedStep = TwoStepTimePicker.MINUTE_PICK_STEP
+
+// Setting up a switch button
+val pickedStepSwitch: Button = view.findViewById(R.id.pickedStepSwitch)
+
+pickedStepSwitch.setOnClickListener {
+    picker.pickedStep = !picker.pickedStep
+}
 ```
 
 ## License
