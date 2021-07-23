@@ -27,7 +27,7 @@ repositories {
 Add it to your app build.gradle
 ```groovy
 dependencies {
-    implementation 'com.github.Sztorm:TimePicker:1.2.0'
+    implementation 'com.github.Sztorm:TimePicker:1.2.1'
 }
 ```
 
